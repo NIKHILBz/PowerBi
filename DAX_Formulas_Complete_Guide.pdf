@@ -1,0 +1,646 @@
+# DAX Formulas - Complete Guide
+
+## Table of Contents
+1. Introduction to DAX
+2. Basic Aggregation Functions
+3. Filter Functions
+4. Time Intelligence Functions
+5. Logical Functions
+6. Text Functions
+7. Date and Time Functions
+8. Advanced DAX Patterns
+9. Real-World Business Examples
+
+## 1. Introduction to DAX
+DAX (Data Analysis Expressions) is a formula language used in Power BI, Excel Power Pivot, and Analysis Services. It's designed for data modeling and calculations.
+
+## 2. Basic Aggregation Functions
+
+### SUM
+**Syntax:** SUM(column)
+**Description:** Adds all numbers in a column
+**Example:**
+Total Sales = SUM(Sales[Amount])
+
+**Real-World Business Example:**
+Calculate total revenue for a retail store:
+Total Revenue = SUM(Transactions[SaleAmount])
+
+### AVERAGE
+**Syntax:** AVERAGE(column)
+**Description:** Returns the average of all numbers in a column
+**Example:**
+Average Order Value = AVERAGE(Orders[OrderAmount])
+
+**Real-World Business Example:**
+Calculate average customer satisfaction score:
+Avg Customer Rating = AVERAGE(Feedback[Rating])
+
+### COUNT
+**Syntax:** COUNT(column)
+**Description:** Counts the number of cells in a column that contain numbers
+**Example:**
+Order Count = COUNT(Orders[OrderID])
+
+**Real-World Business Example:**
+Count total number of support tickets:
+Total Tickets = COUNT(SupportTickets[TicketID])
+
+### DISTINCTCOUNT
+**Syntax:** DISTINCTCOUNT(column)
+**Description:** Counts the number of distinct values in a column
+**Example:**
+Unique Customers = DISTINCTCOUNT(Sales[CustomerID])
+
+**Real-World Business Example:**
+Calculate unique website visitors:
+Unique Visitors = DISTINCTCOUNT(WebTraffic[UserID])
+
+### MIN / MAX
+**Syntax:** MIN(column) / MAX(column)
+**Description:** Returns minimum or maximum value
+**Example:**
+Lowest Price = MIN(Products[Price])
+Highest Price = MAX(Products[Price])
+
+**Real-World Business Example:**
+Find earliest and latest order dates:
+First Order Date = MIN(Orders[OrderDate])
+Last Order Date = MAX(Orders[OrderDate])
+
+## 3. Filter Functions
+
+### CALCULATE
+**Syntax:** CALCULATE(expression, filter1, filter2, ...)
+**Description:** Evaluates an expression in a modified filter context
+**Example:**
+Sales USA = CALCULATE(SUM(Sales[Amount]), Geography[Country] = "USA")
+
+**Real-World Business Example:**
+Calculate sales for premium customers only:
+Premium Customer Sales = CALCULATE(
+    SUM(Sales[Amount]),
+    Customers[Tier] = "Premium"
+)
+
+### FILTER
+**Syntax:** FILTER(table, condition)
+**Description:** Returns a table that has been filtered
+**Example:**
+High Value Orders = FILTER(Orders, Orders[Amount] > 1000)
+
+**Real-World Business Example:**
+Filter for active subscriptions:
+Active Subscriptions = CALCULATE(
+    COUNT(Subscriptions[ID]),
+    FILTER(Subscriptions, Subscriptions[Status] = "Active")
+)
+
+### ALL
+**Syntax:** ALL(table or column)
+**Description:** Removes all filters from specified columns or table
+**Example:**
+Total Sales All Regions = CALCULATE(SUM(Sales[Amount]), ALL(Geography[Region]))
+
+**Real-World Business Example:**
+Calculate percentage of total sales:
+% of Total Sales = 
+DIVIDE(
+    SUM(Sales[Amount]),
+    CALCULATE(SUM(Sales[Amount]), ALL(Sales))
+)
+
+### ALLSELECTED
+**Syntax:** ALLSELECTED(table or column)
+**Description:** Removes context filters while keeping filters from slicers
+**Example:**
+Sales vs Selected = CALCULATE(SUM(Sales[Amount]), ALLSELECTED())
+
+**Real-World Business Example:**
+Show sales percentage within current filter context:
+% of Filtered Total = 
+DIVIDE(
+    SUM(Sales[Amount]),
+    CALCULATE(SUM(Sales[Amount]), ALLSELECTED(Sales))
+)
+
+### RELATED
+**Syntax:** RELATED(column)
+**Description:** Returns a related value from another table
+**Example:**
+Product Category = RELATED(Products[Category])
+
+**Real-World Business Example:**
+Get customer segment in sales table:
+Customer Segment = RELATED(Customers[Segment])
+
+### RELATEDTABLE
+**Syntax:** RELATEDTABLE(table)
+**Description:** Returns related rows from another table
+**Example:**
+Customer Orders = COUNTROWS(RELATEDTABLE(Orders))
+
+**Real-World Business Example:**
+Count number of purchases per customer:
+Total Purchases = COUNTROWS(RELATEDTABLE(Transactions))
+
+## 4. Time Intelligence Functions
+
+### DATESYTD / DATESMTD / DATESQTD
+**Syntax:** DATESYTD(date_column)
+**Description:** Returns dates from year/month/quarter to date
+**Example:**
+Sales YTD = CALCULATE(SUM(Sales[Amount]), DATESYTD(Calendar[Date]))
+
+**Real-World Business Example:**
+Calculate year-to-date revenue:
+Revenue YTD = CALCULATE(
+    SUM(Sales[Revenue]),
+    DATESYTD(Calendar[Date])
+)
+
+### TOTALYTD / TOTALMTD / TOTALQTD
+**Syntax:** TOTALYTD(expression, dates, [filter])
+**Description:** Evaluates expression for year/month/quarter to date
+**Example:**
+YTD Sales = TOTALYTD(SUM(Sales[Amount]), Calendar[Date])
+
+**Real-World Business Example:**
+Year-to-date profit:
+Profit YTD = TOTALYTD(SUM(Financials[Profit]), Calendar[Date])
+
+### SAMEPERIODLASTYEAR
+**Syntax:** SAMEPERIODLASTYEAR(dates)
+**Description:** Returns dates from the same period last year
+**Example:**
+Sales Last Year = CALCULATE(SUM(Sales[Amount]), SAMEPERIODLASTYEAR(Calendar[Date]))
+
+**Real-World Business Example:**
+Compare current sales with last year:
+Sales LY = CALCULATE(
+    SUM(Sales[Amount]),
+    SAMEPERIODLASTYEAR(Calendar[Date])
+)
+
+YoY Growth = [Sales This Year] - [Sales Last Year]
+
+### DATEADD
+**Syntax:** DATEADD(dates, number_of_intervals, interval)
+**Description:** Shifts dates by specified interval
+**Example:**
+Previous Month Sales = CALCULATE(SUM(Sales[Amount]), DATEADD(Calendar[Date], -1, MONTH))
+
+**Real-World Business Example:**
+Calculate rolling 3-month average:
+Rolling 3M Avg = 
+CALCULATE(
+    AVERAGE(Sales[Amount]),
+    DATEADD(Calendar[Date], -3, MONTH)
+)
+
+### PARALLELPERIOD
+**Syntax:** PARALLELPERIOD(dates, number_of_intervals, interval)
+**Description:** Returns parallel period in the past or future
+**Example:**
+Sales Previous Quarter = CALCULATE(SUM(Sales[Amount]), PARALLELPERIOD(Calendar[Date], -1, QUARTER))
+
+**Real-World Business Example:**
+Compare quarterly performance:
+Previous Quarter Revenue = 
+CALCULATE(
+    SUM(Sales[Revenue]),
+    PARALLELPERIOD(Calendar[Date], -1, QUARTER)
+)
+
+## 5. Logical Functions
+
+### IF
+**Syntax:** IF(logical_test, value_if_true, value_if_false)
+**Description:** Checks a condition and returns one value if TRUE, another if FALSE
+**Example:**
+Sales Category = IF(Sales[Amount] > 1000, "High", "Low")
+
+**Real-World Business Example:**
+Classify customers by purchase amount:
+Customer Type = 
+IF(
+    SUM(Sales[Amount]) > 10000,
+    "VIP",
+    "Regular"
+)
+
+### SWITCH
+**Syntax:** SWITCH(expression, value1, result1, value2, result2, ..., else_result)
+**Description:** Evaluates an expression and returns corresponding result
+**Example:**
+Day Type = SWITCH(WEEKDAY(Calendar[Date]), 1, "Sunday", 7, "Saturday", "Weekday")
+
+**Real-World Business Example:**
+Categorize products by price range:
+Price Category = 
+SWITCH(
+    TRUE(),
+    Products[Price] < 10, "Budget",
+    Products[Price] < 50, "Standard",
+    Products[Price] < 200, "Premium",
+    "Luxury"
+)
+
+### AND / OR
+**Syntax:** AND(logical1, logical2) / OR(logical1, logical2)
+**Description:** Checks if all conditions are TRUE (AND) or any condition is TRUE (OR)
+**Example:**
+Premium Sale = IF(AND(Sales[Amount] > 1000, Customers[Status] = "Premium"), "Yes", "No")
+
+**Real-World Business Example:**
+Identify high-value opportunities:
+High Value Opportunity = 
+IF(
+    AND(
+        Deals[Value] > 100000,
+        Deals[Probability] > 0.7
+    ),
+    "Priority",
+    "Standard"
+)
+
+## 6. Text Functions
+
+### CONCATENATE / COMBINEVALUES
+**Syntax:** CONCATENATE(text1, text2) or text1 & text2
+**Description:** Joins two text strings
+**Example:**
+Full Name = Customers[FirstName] & " " & Customers[LastName]
+
+**Real-World Business Example:**
+Create full address:
+Full Address = 
+Customers[Street] & ", " & 
+Customers[City] & ", " & 
+Customers[State] & " " & 
+Customers[ZipCode]
+
+### LEFT / RIGHT / MID
+**Syntax:** LEFT(text, num_chars) / RIGHT(text, num_chars) / MID(text, start, num_chars)
+**Description:** Extracts characters from text
+**Example:**
+Product Code = LEFT(Products[SKU], 3)
+
+**Real-World Business Example:**
+Extract year from product code:
+Product Year = RIGHT(Products[ProductCode], 4)
+
+### UPPER / LOWER / PROPER
+**Syntax:** UPPER(text) / LOWER(text) / PROPER(text)
+**Description:** Converts text to uppercase, lowercase, or proper case
+**Example:**
+Customer Name = UPPER(Customers[Name])
+
+**Real-World Business Example:**
+Standardize email addresses:
+Email Lower = LOWER(Customers[Email])
+
+### SUBSTITUTE / REPLACE
+**Syntax:** SUBSTITUTE(text, old_text, new_text) / REPLACE(old_text, start, num_chars, new_text)
+**Description:** Replaces text
+**Example:**
+Clean Phone = SUBSTITUTE(Customers[Phone], "-", "")
+
+**Real-World Business Example:**
+Clean product descriptions:
+Clean Description = SUBSTITUTE(Products[Description], "  ", " ")
+
+## 7. Date and Time Functions
+
+### TODAY / NOW
+**Syntax:** TODAY() / NOW()
+**Description:** Returns current date or date and time
+**Example:**
+Days Since Order = TODAY() - Orders[OrderDate]
+
+**Real-World Business Example:**
+Calculate account age:
+Account Age Days = TODAY() - Customers[SignUpDate]
+
+### YEAR / MONTH / DAY
+**Syntax:** YEAR(date) / MONTH(date) / DAY(date)
+**Description:** Extracts year, month, or day from a date
+**Example:**
+Order Year = YEAR(Orders[OrderDate])
+
+**Real-World Business Example:**
+Create fiscal period:
+Fiscal Month = 
+VAR CalMonth = MONTH(Sales[Date])
+RETURN IF(CalMonth >= 4, CalMonth - 3, CalMonth + 9)
+
+### EOMONTH
+**Syntax:** EOMONTH(start_date, months)
+**Description:** Returns last day of month
+**Example:**
+Month End = EOMONTH(Orders[OrderDate], 0)
+
+**Real-World Business Example:**
+Calculate subscription end date:
+Subscription End = EOMONTH(Subscriptions[StartDate], 12)
+
+### DATEDIFF
+**Syntax:** DATEDIFF(start_date, end_date, interval)
+**Description:** Returns difference between two dates
+**Example:**
+Order Processing Days = DATEDIFF(Orders[OrderDate], Orders[ShipDate], DAY)
+
+**Real-World Business Example:**
+Calculate employee tenure:
+Tenure Years = DATEDIFF(Employees[HireDate], TODAY(), YEAR)
+
+## 8. Advanced DAX Patterns
+
+### Running Total
+**Example:**
+Running Total Sales = 
+CALCULATE(
+    SUM(Sales[Amount]),
+    FILTER(
+        ALL(Calendar[Date]),
+        Calendar[Date] <= MAX(Calendar[Date])
+    )
+)
+
+**Real-World Business Example:**
+Track cumulative revenue throughout the year:
+Cumulative Revenue = 
+CALCULATE(
+    SUM(Sales[Revenue]),
+    FILTER(
+        ALLSELECTED(Calendar[Date]),
+        Calendar[Date] <= MAX(Calendar[Date])
+    )
+)
+
+### Ranking
+**Example:**
+Product Rank = 
+RANKX(
+    ALL(Products[ProductName]),
+    SUM(Sales[Amount]),
+    ,
+    DESC,
+    DENSE
+)
+
+**Real-World Business Example:**
+Rank sales representatives by performance:
+Sales Rep Rank = 
+RANKX(
+    ALL(Employees[SalesRep]),
+    SUM(Sales[Amount]),
+    ,
+    DESC
+)
+
+### Moving Average
+**Example:**
+3 Month Moving Avg = 
+CALCULATE(
+    AVERAGE(Sales[Amount]),
+    DATESINPERIOD(
+        Calendar[Date],
+        LASTDATE(Calendar[Date]),
+        -3,
+        MONTH
+    )
+)
+
+**Real-World Business Example:**
+Calculate rolling 7-day average for website traffic:
+7 Day Avg Traffic = 
+CALCULATE(
+    AVERAGE(WebAnalytics[Visitors]),
+    DATESINPERIOD(
+        Calendar[Date],
+        MAX(Calendar[Date]),
+        -7,
+        DAY
+    )
+)
+
+### Previous Period Comparison
+**Example:**
+YoY Growth % = 
+VAR CurrentSales = SUM(Sales[Amount])
+VAR PreviousSales = CALCULATE(SUM(Sales[Amount]), SAMEPERIODLASTYEAR(Calendar[Date]))
+RETURN DIVIDE(CurrentSales - PreviousSales, PreviousSales)
+
+**Real-World Business Example:**
+Calculate month-over-month growth:
+MoM Growth % = 
+VAR CurrentMonth = SUM(Sales[Revenue])
+VAR PreviousMonth = CALCULATE(SUM(Sales[Revenue]), DATEADD(Calendar[Date], -1, MONTH))
+RETURN DIVIDE(CurrentMonth - PreviousMonth, PreviousMonth, 0)
+
+### DIVIDE (Safe Division)
+**Syntax:** DIVIDE(numerator, denominator, [alternate_result])
+**Description:** Performs division and handles division by zero
+**Example:**
+Average Order Value = DIVIDE(SUM(Sales[Amount]), COUNT(Sales[OrderID]), 0)
+
+**Real-World Business Example:**
+Calculate conversion rate:
+Conversion Rate = 
+DIVIDE(
+    DISTINCTCOUNT(Customers[CustomerID]),
+    DISTINCTCOUNT(WebTraffic[VisitorID]),
+    0
+)
+
+### VAR (Variables)
+**Syntax:** VAR name = expression RETURN result
+**Description:** Stores intermediate results for better performance and readability
+**Example:**
+Profit Margin % = 
+VAR TotalRevenue = SUM(Sales[Revenue])
+VAR TotalCost = SUM(Sales[Cost])
+VAR Profit = TotalRevenue - TotalCost
+RETURN DIVIDE(Profit, TotalRevenue, 0)
+
+**Real-World Business Example:**
+Calculate customer lifetime value:
+Customer LTV = 
+VAR AvgPurchaseValue = DIVIDE(SUM(Sales[Amount]), DISTINCTCOUNT(Sales[OrderID]))
+VAR AvgPurchaseFreq = DIVIDE(DISTINCTCOUNT(Sales[OrderID]), DISTINCTCOUNT(Sales[CustomerID]))
+VAR AvgCustomerLifespan = 3
+RETURN AvgPurchaseValue * AvgPurchaseFreq * AvgCustomerLifespan
+
+## 9. Real-World Business Examples
+
+### Sales Analytics
+
+**1. Sales Performance Dashboard**
+Total Sales = SUM(Sales[Amount])
+Total Orders = DISTINCTCOUNT(Sales[OrderID])
+Average Order Value = DIVIDE([Total Sales], [Total Orders], 0)
+Sales Target Achievement % = DIVIDE([Total Sales], SUM(Targets[Target]), 0)
+
+**2. Customer Segmentation**
+Customer Segment = 
+SWITCH(
+    TRUE(),
+    SUM(Sales[Amount]) >= 50000, "Platinum",
+    SUM(Sales[Amount]) >= 10000, "Gold",
+    SUM(Sales[Amount]) >= 5000, "Silver",
+    "Bronze"
+)
+
+**3. Product Performance**
+Product Contribution % = 
+DIVIDE(
+    SUM(Sales[Amount]),
+    CALCULATE(SUM(Sales[Amount]), ALL(Products)),
+    0
+)
+
+### Financial Reporting
+
+**1. Profit Analysis**
+Gross Profit = SUM(Sales[Revenue]) - SUM(Sales[COGS])
+Gross Margin % = DIVIDE([Gross Profit], SUM(Sales[Revenue]), 0)
+Net Profit = [Gross Profit] - SUM(Expenses[Amount])
+
+**2. Budget Variance**
+Budget Variance = SUM(Actuals[Amount]) - SUM(Budget[Amount])
+Budget Variance % = DIVIDE([Budget Variance], SUM(Budget[Amount]), 0)
+
+**3. Cash Flow Analysis**
+Operating Cash Flow = 
+SUM(CashFlow[Receipts]) - SUM(CashFlow[Payments])
+
+### HR Analytics
+
+**1. Headcount Analysis**
+Total Employees = DISTINCTCOUNT(Employees[EmployeeID])
+Active Employees = 
+CALCULATE(
+    DISTINCTCOUNT(Employees[EmployeeID]),
+    Employees[Status] = "Active"
+)
+
+**2. Attrition Rate**
+Attrition Rate = 
+VAR TotalEmp = [Total Employees]
+VAR LeftEmp = CALCULATE(DISTINCTCOUNT(Employees[EmployeeID]), Employees[Status] = "Left")
+RETURN DIVIDE(LeftEmp, TotalEmp, 0)
+
+**3. Average Tenure**
+Avg Tenure Years = 
+AVERAGEX(
+    FILTER(Employees, Employees[Status] = "Active"),
+    DATEDIFF(Employees[HireDate], TODAY(), YEAR)
+)
+
+### Marketing Analytics
+
+**1. Campaign ROI**
+Campaign ROI = 
+VAR Revenue = SUM(Sales[Amount])
+VAR Cost = SUM(Marketing[Spend])
+RETURN DIVIDE(Revenue - Cost, Cost, 0)
+
+**2. Customer Acquisition Cost**
+CAC = 
+DIVIDE(
+    SUM(Marketing[Spend]),
+    DISTINCTCOUNT(Customers[CustomerID]),
+    0
+)
+
+**3. Lead Conversion Rate**
+Conversion Rate = 
+DIVIDE(
+    CALCULATE(COUNT(Leads[ID]), Leads[Status] = "Converted"),
+    COUNT(Leads[ID]),
+    0
+)
+
+### Inventory Management
+
+**1. Inventory Turnover**
+Inventory Turnover = 
+DIVIDE(
+    SUM(Sales[COGS]),
+    AVERAGE(Inventory[Value]),
+    0
+)
+
+**2. Days of Inventory**
+Days of Inventory = 
+DIVIDE(
+    365,
+    [Inventory Turnover],
+    0
+)
+
+**3. Stock Out Rate**
+Stock Out Rate = 
+DIVIDE(
+    CALCULATE(COUNT(Products[ID]), Inventory[Quantity] = 0),
+    COUNT(Products[ID]),
+    0
+)
+
+### Customer Service
+
+**1. Average Resolution Time**
+Avg Resolution Time = 
+AVERAGEX(
+    Tickets,
+    DATEDIFF(Tickets[Created], Tickets[Resolved], HOUR)
+)
+
+**2. First Response Time**
+Avg First Response = 
+AVERAGEX(
+    Tickets,
+    DATEDIFF(Tickets[Created], Tickets[FirstResponse], MINUTE)
+)
+
+**3. Customer Satisfaction Score**
+CSAT = 
+DIVIDE(
+    CALCULATE(COUNT(Feedback[ID]), Feedback[Rating] >= 4),
+    COUNT(Feedback[ID]),
+    0
+)
+
+## Best Practices
+
+1. **Use Variables (VAR)** - Improves performance and readability
+2. **Avoid Iterating Functions in Large Tables** - Use calculated columns when necessary
+3. **Use DIVIDE Instead of /** - Handles division by zero
+4. **Filter Early** - Apply filters before calculations
+5. **Use CALCULATE for Context Transition** - Essential for row context to filter context
+6. **Name Measures Clearly** - Use descriptive names
+7. **Comment Complex Formulas** - Use // for comments
+8. **Test with Different Filter Contexts** - Ensure measures work across all scenarios
+9. **Leverage Time Intelligence** - Use built-in functions for date calculations
+10. **Optimize Data Model** - Star schema is preferred
+
+## Common DAX Patterns Cheat Sheet
+
+| Pattern | DAX Formula |
+|---------|-------------|
+| Percentage of Total | DIVIDE(SUM(Table[Column]), CALCULATE(SUM(Table[Column]), ALL(Table))) |
+| Year over Year | CALCULATE(SUM(Sales[Amount]), SAMEPERIODLASTYEAR(Calendar[Date])) |
+| Running Total | CALCULATE(SUM(Sales[Amount]), FILTER(ALL(Date), Date <= MAX(Date))) |
+| Top N | TOPN(10, ALL(Product), [Total Sales], DESC) |
+| Moving Average | CALCULATE(AVERAGE(Sales[Amount]), DATESINPERIOD(Date, MAX(Date), -3, MONTH)) |
+| Rank | RANKX(ALL(Product), [Total Sales], , DESC) |
+| Cumulative | CALCULATE([Measure], FILTER(ALL(Date), Date <= MAX(Date))) |
+
+---
+
+**Document Created:** February 2026
+**For:** Power BI DAX Learning and Reference
+**Version:** 1.0
+
+This guide covers essential DAX formulas with practical business applications across sales, finance, HR, marketing, inventory, and customer service domains.
